@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>贪吃蛇</title>
+  </head>
+  <style>
+    #atlas {
+      width: 800px;
+      height: 800px;
+      border: 2px solid rgb(177, 255, 114);
+      background-color: rgba(241, 255, 116, 0.644);
+      margin: 0px auto;
+      position: relative;
+      z-index: 0;
+    }
+
+    .snake {
+      width: 20px;
+      height: 15px;
+      border: 1px solid rgb(0, 225, 255);
+      background-color: black;
+      margin: 0px auto;
+      position: absolute;
+      z-index: 3;
+    }
+
+    h1 {
+      float: left;
+      margin-left: 100px;
+      font-size: 45px;
+    }
+
+    #gameOver {
+      float: right;
+      margin-right: 100px;
+      margin-top: 100px;
+      width: 300px;
+      height: 200px;
+      font-size: 40px;
+    }
+  </style>
+
+  <body>
+    <h1><br />W：上<br />S：下<br />A：左<br />D：右<br /></h1>
+    <input type="button" id="gameOver" value="结束游戏" />
+    <!--地图-->
+    <div id="atlas"></div>
+
+    <script>
+      let timer = 0; //计时器指标
+      let gameOver = document.querySelector("#gameOver"); //结束游戏
+      let map = document.querySelector("#atlas"); //地图
+      let movingDirection = 0; //蛇头移动方向：1.上;2.下;3.左;4.右
+      let isStart = false; //游戏是否开始
+      let snakeNum = []; //存放每节方向数据
+
+      //开始游戏方法
+      function gameStart() {
+        //绘制初始蛇与蛇对象
+        loadingS();
+        //计时器不断更改记录方向的数组
+        timer = setInterval(function () {
+          changeMd();
+        }, 200);
+      }
+
+      //结束游戏方法
+      gameOver.onclick = function () {
+        clearInterval(timer);
+      };
+
+      //创建一节蛇div
+      //color:背景色
+      //isFood：是否是食物
+      function AddSnake(id, color, isFood) {
+        let sBody = document.createElement("div");
+        sBody.id = id;
+        sBody.className = "snake";
+        if (isFood) {
+          sBody.style.left = Math.ceil((Math.random() * 780) / 20) * 20 + "px";
+          sBody.style.top = Math.ceil((Math.random() * 780) / 20) * 20 + "px";
+        }
+        id === 0 ? true : (sBody.style.backgroundColor = color);
+        return sBody;
+      }
+
+      //加载蛇对象
+      function loadingS() {
+        let initial = 3; //初始蛇节数
+        for (let i = 0; i < initial + 1; i++) {
+          if (i === initial) {
+            map.appendChild(AddSnake(i, randomColor(), true));
+          } else {
+            map.appendChild(AddSnake(i, randomColor(), false));
+            snakeNum.push(0);
+          }
+        }
+      }
+      //更改每节的方向
+      function changeMd() {
+        //更改记录方向的数组
+        snakeNum = replaceNum(snakeNum);
+        //调用移动方法，每节移动
+        for (let i = 0; i < snakeNum.length; i++) {
+          if (i === 0) {
+            moving(map.children[i], snakeNum[i], true);
+          } else {
+            moving(map.children[i], snakeNum[i], false);
+          }
+        }
+      }
+
+      //处理方向数组方法，把数组数据后移一位
+      function replaceNum(arr1) {
+        arr1.unshift(movingDirection); //往头部插入最新方向
+        arr1.splice(arr1.length - 1, 1); //删除最后一个方向
+        return arr1;
+      }
+
+      //移动方法
+      //num:移动方向
+      //snakeDom:要移动的部位
+      //isHead:是否是蛇头
+      function moving(snakeDom, num, isHead) {
+        let positionTop = snakeDom.offsetTop;
+        let positionLeft = snakeDom.offsetLeft;
+        //获取食物
+        switch (num) {
+          case 1:
+            if (positionTop > 0) {
+              positionTop -= 20;
+              snakeDom.style.top = positionTop + "px";
+              if (isHead) {
+                eatingFood(positionTop, positionLeft, num);
+              }
+              break;
+            }
+          case 2:
+            if (positionTop < 780) {
+              positionTop += 20;
+              snakeDom.style.top = positionTop + "px";
+              if (isHead) {
+                eatingFood(positionTop, positionLeft, num);
+              }
+              break;
+            }
+          case 3:
+            if (positionLeft > 0) {
+              positionLeft -= 20;
+              snakeDom.style.left = positionLeft + "px";
+              if (isHead) {
+                eatingFood(positionTop, positionLeft, num);
+              }
+              break;
+            }
+          case 4:
+            if (positionLeft < 780) {
+              positionLeft += 20;
+              snakeDom.style.left = positionLeft + "px";
+              if (isHead) {
+                eatingFood(positionTop, positionLeft, num);
+              }
+              break;
+            }
+        }
+      }
+
+      //判断是否吃掉食物。
+      //top:蛇头offsettop
+      //left:蛇头offsetleft;
+      //num:前进方向
+      function eatingFood(top, left, num) {
+        let food = map.children[snakeNum.length];
+        let foodLeft = food.offsetLeft;
+        let foodTop = food.offsetTop;
+        let isEat = false;
+        switch (num) {
+          case 1:
+            if (top === foodTop && left === foodLeft) {
+              isEat = true;
+            }
+            break;
+          case 2:
+            if (top === foodTop && left === foodLeft) {
+              isEat = true;
+            }
+            break;
+          case 3:
+            if (left === foodLeft && top === foodTop) {
+              isEat = true;
+            }
+            break;
+          case 4:
+            if (left === foodLeft && top === foodTop) {
+              isEat = true;
+            }
+            break;
+        }
+        //食物被吃掉执行
+        if (isEat) {
+          map.appendChild(AddSnake(snakeNum.length + 1, randomColor(), true)); //生成新的食物
+          snakeNum.push(0); //往记录方向的数组中添加一位
+          //把新的蛇div放到蛇的末尾
+          let snakeNewDom = map.children[snakeNum.length - 1];
+          let snakeLastDom = map.children[snakeNum.length - 2];
+          snakeNewDom.style.left = snakeLastDom.offsetLeft + "px";
+          snakeNewDom.style.top = snakeLastDom.offsetTop + "px";
+        }
+      }
+
+      //键盘按下改变移动方向
+      document.onkeypress = function (e) {
+        e.keyCode === 119 || e.keyCode === 87 ? (movingDirection = 1) : 0;
+        e.keyCode === 115 || e.keyCode === 83 ? (movingDirection = 2) : 0;
+        e.keyCode === 97 || e.keyCode === 65 ? (movingDirection = 3) : 0;
+        e.keyCode === 100 || e.keyCode === 68 ? (movingDirection = 4) : 0;
+        if (movingDirection != 0 && isStart == false) {
+          isStart = true;
+          gameStart();
+        }
+      };
+      //生成随机色
+      function randomColor() {
+        let hexadecimalNum = [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+        ];
+        let num;
+        let str = "#";
+        for (let i = 0; i < 6; i++) {
+          num = Math.ceil(Math.random() * 15);
+          str += hexadecimalNum[num];
+        }
+        return str;
+      }
+    </script>
+  </body>
+</html>
